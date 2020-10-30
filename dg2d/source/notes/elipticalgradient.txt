@@ -1,0 +1,47 @@
+Eliptical gradient
+==================
+
+There are a few ways to define an elipse but having thought about it I think it is most useful to have a general method that takes three points,
+
+the center of the elipse
+the location of 0 degrees for the elipse
+the location of 90 degrees for the elipse
+
+This allows mapping any linear transform to be supported. 
+
+so we have
+
+center : (x0,y0)
+axis0 : (x1,y1)
+axis1 : (x2,y2)
+
+We can calculate t0 and t1 as described in paintmap.txt
+
+from which you can evaluate the radius or angle for the elipse...
+
+r = sqrt(t0^2+t1^2)
+
+or the angle
+
+a = atan2(t1,t0)
+
+Other ways to define the elipse can be built on top of this. If you want a circle, a center point and the location of 0 degress on the circumference can easily be converted into three points for example.
+
+circle = x0,y0,x1,y1
+
+which becomes...
+
+p0 = x0,y0
+p1 = x1,y1
+p2 = x0-(y1-y0),y0+(x1-x0)
+
+IE. We just define p2 as the same radius at right angle to p1
+
+An elipse can also be deined with a center point, and edge point and an aspect ratio
+
+elipse = x0,y0,x1,y1,r
+
+p0 = x0,y0
+p1 = x1,y1
+p2 = x0-r*(y1-y0),y0+r*(x1-x0)
+

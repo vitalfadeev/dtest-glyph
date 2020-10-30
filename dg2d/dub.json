@@ -1,0 +1,12 @@
+{
+    "name": "dg2d",
+    "authors": ["Chris"],
+    "description": "2D vector graphics rendering library for the D Programming Language.",
+    "copyright": "Copyright © 2018, Chris",
+    "license": "BSL-1.0",
+    "targetType": "library",
+
+    "dependencies": {
+        "intel-intrinsics": "~>1.0"
+    }
+}

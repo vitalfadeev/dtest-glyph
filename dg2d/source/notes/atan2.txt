@@ -1,0 +1,75 @@
+Fast atan2 for angular gradients
+================================
+
+Calculate the angle of the line (0,0)-->(x,y)
+
+Goals...
+1. make it branch free, for easy SIMD,
+2. fast aproximation that is just good enough
+
+Details...
+==========
+
+Calculate the angle for the first quadrant (x >= 0, and y >= 0), and flip / mirror that to get the other quadrants.
+
+We need to convert (x,y) into a "gradient" of sorts, so that all points at a given angle have the same value, and then we can stuff that into a polynomial approximation to get the angle. We would idealy keep this "gradient" normalised, so it's abs() value is never greater than 1. Luckily there's a simple solution...
+
+g = (x-y)/(x+y)
+
+As x and y are always positive g will always be in the range -1..1
+
+In order to avoid posible divide by zero we limit the denominator...
+
+g = (x-y) / max((x+y),0.001)
+
+If x,y are pixel coordinates the 0.001 is 1/1000 pixel error for the absolute center of the gradient, which is irrelevant.
+
+We then use a cubic aproximation to map 'g' to the angle. I used curve fitting based on limiting the maximum absolute error to generate the polynomial, max error was 0.315% or 0.28 degrees. Also the even powers in the polynominal tended towards zero so it converged on...
+
+angle = 0.19194811*q^3 - 0.972394341*q + 0.785398163;
+
+and if we want the full circle to map to the range 0..1 rather that 0..2PI, we can use this...
+
+angle = 0.0305494905*q^3 - 0.154761366*q + 0.125;
+
+given (y,x) 
+
+  ax = abs(x)
+  ay = abs(y)
+  q = (ax-ay) / max(ax+ay,0.001);
+  angle = 0.191948022*q*q*q - 0.972394222*q + 0.785398163;
+
+Now we consider how the sign of x,y maps the angle in the first quadrant to the other quadrants...
+
+quadrant denoted [signx,signy], so [-+] is top left
+
+[++] : => a
+[-+] : => PI-a
+[--] : => PI+a
+[+-] : => 2PI-a
+
+So
+
+if (sign(x) != sign(y)) a = -a;
+if (sign(x)) a += PI
+
+The angle is modulus 2PI anyway so the 2PI term in [+-] is irrelevant
+
+Can be done in float thus...
+
+a = a ^ ((x ^ y) & SGNBIT);
+a = a + (x sar 31) & PI)
+
+We xor the sign bits of X and Y, then we mask that sign bit and XOR that with A.
+Then we make a bit mask from the sign bit of X, and use that to conditionaly add PI.
+
+can be done in int with
+
+xmsk = X sar 31
+ymsk = Y sar 31
+a = a ^ (xmsk ^ ymsk)
+a += (xmsk & whatever_bit_for_PI)
+
+Make a bit mask from the sign bits of X and Y, XOR them and it that to flip all the bits in a
+then use the sign mask from X conditionaly add the equivelant of PI
+

@@ -1,0 +1,11 @@
+{
+    "authors"      : [ "vital" ],
+    "copyright"    : "Copyright © 2020, vital",
+    "description"  : "A minimal D application.",
+    "license"      : "proprietary",
+    "name"         : "dtest-glyph",
+    "dependencies" :
+    {
+        "dg2d" : { "path" : "./dg2d" }
+    },
+}
